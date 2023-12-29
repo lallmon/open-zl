@@ -36,6 +36,12 @@ add_executable(open-zl ${SOURCES_THIRDPARTY} ${SOURCES})
 target_include_directories(open-zl PRIVATE ${INCLUDE_DIRS})
 
 if (UNIX)
+    add_compile_options(-Wall)
+elseif(MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT ")
+endif()
+
+if (UNIX)
     target_link_libraries(open-zl ${PROJECT_SOURCE_DIR}/libs/linux/libglfw3.a)
     target_link_libraries(open-zl ${PROJECT_SOURCE_DIR}/libs/linux/libportaudio.a)
     target_link_libraries(open-zl X11)
