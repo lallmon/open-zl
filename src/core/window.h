@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <glfw3.h>
 
-#include <unordered_map>
+#include <vector>
 #include <string>
 
 class Window
@@ -21,8 +21,10 @@ class Window
         unsigned int id = 0;
         bool failed = false;
         int w, h;
+        std::string name;
+        Texture(std::string n) : name(n) {}
     };
-    std::unordered_map<std::string, Texture> m_texture_map;
+    std::vector<Texture> m_textures;
 
     bool tryLoadTexture(std::string tex);
 
@@ -31,7 +33,13 @@ public:
 
     void renderWindow();
 
+    void setClip(float x1, float y1, float x2, float y2);
+
+    void bindTexture(std::string texture_name, float w, float h);
+    void drawActive(float x, float y);
+
     void draw(std::string texture_name, float x, float y);
+    void draw(std::string texture_name, float x, float y, float w, float h);
 
     void setPen(float r, float g, float b, float a);
     void rect(float x, float y, float w, float h);

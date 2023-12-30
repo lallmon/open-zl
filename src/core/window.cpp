@@ -1,6 +1,7 @@
 #include "window.h"
 
 #include <iostream>
+#include <algorithm>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -33,16 +34,18 @@ void framebufferResize(GLFWwindow * w, int width, int height)
 
 bool Window::tryLoadTexture(std::string tex)
 {
-    if (m_texture_map.find(tex) != m_texture_map.end()) !m_texture_map[tex].failed;
+    auto elem = std::find_if(m_textures.begin(), m_textures.end(), [&](const Texture &t) { return t.name == tex; });
+    if (elem != m_textures.end()) return !elem->failed;
 
-    m_texture_map[tex] = Texture();
-    Texture &t = m_texture_map.at(tex);
+    std::cout << "INFO: Loading texture " << tex << std::endl;
+
+    m_textures.push_back(Texture(tex));
+    Texture &t = m_textures[m_textures.size()-1];
 
     // TODO: move this to a resource path locator
     tex = "resources/textures/" + tex + ".png";
 
-    int channels;
-    unsigned char * data = stbi_load(tex.c_str(), &t.w, &t.h, &channels, 4);
+    unsigned char * data = stbi_load(tex.c_str(), &t.w, &t.h, 0, 4);
     if (stbi_failure_reason()) {
         std::cout << "ERROR: Could not load texture " << tex << ", reason: " << stbi_failure_reason() << std::endl;
         t.failed = true;
@@ -73,7 +76,6 @@ bool Window::initialize()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     glfwWindowHint(GLFW_REFRESH_RATE, 60);
-
 
     m_handle = glfwCreateWindow(virtual_width * 4, virtual_height * 4, "open-zl", nullptr, nullptr);
 
@@ -205,11 +207,52 @@ void Window::renderWindow()
     glUseProgram(m_texture_shader);
 }
 
+void Window::setClip(float x1, float y1, float x2, float y2)
+{
+    float a[2];
+    a[0] = x1;
+    a[1] = x2;
+    int loc = glGetUniformLocation(m_texture_shader, "xverts");
+    glUniform1fv(loc, 2, a);
+
+    a[0] = y1;
+    a[1] = y2;
+    loc = glGetUniformLocation(m_texture_shader, "yverts");
+    glUniform1fv(loc, 2, a);
+}
+
+void Window::bindTexture(std::string texture_name, float w, float h)
+{
+    if (!tryLoadTexture(texture_name)) return;
+    Texture &tex = *std::find_if(m_textures.begin(), m_textures.end(), [&](const Texture &t) { return t.name == texture_name; });
+
+    {
+        int loc = glGetUniformLocation(m_texture_shader, "size");
+        glUniform2f(loc, w, h);
+
+        loc = glGetUniformLocation(m_texture_shader, "colorMult");
+        glUniform4f(loc, 1, 1, 1, 1);
+    }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex.id);
+    glBindVertexArray(m_texture_vao);
+}
+
+void Window::drawActive(float x, float y)
+{
+    {
+        int loc = glGetUniformLocation(m_texture_shader, "topleft");
+        glUniform2f(loc, std::floor(x), std::floor(y));
+    }
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
 void Window::draw(std::string texture_name, float x, float y)
 {
     if (!tryLoadTexture(texture_name)) return;
-
-    Texture &tex = m_texture_map.at(texture_name);
+    Texture &tex = *std::find_if(m_textures.begin(), m_textures.end(), [&](const Texture &t) { return t.name == texture_name; });
 
     {
         int loc = glGetUniformLocation(m_texture_shader, "topleft");
@@ -218,6 +261,30 @@ void Window::draw(std::string texture_name, float x, float y)
 
         loc = glGetUniformLocation(m_texture_shader, "size");
         glUniform2f(loc, float(tex.w), float(tex.h));
+
+        loc = glGetUniformLocation(m_texture_shader, "colorMult");
+        glUniform4f(loc, 1, 1, 1, 1);
+    }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex.id);
+
+    glBindVertexArray(m_texture_vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Window::draw(std::string texture_name, float x, float y, float w, float h)
+{
+    if (!tryLoadTexture(texture_name)) return;
+    Texture &tex = *std::find_if(m_textures.begin(), m_textures.end(), [&](const Texture &t) { return t.name == texture_name; });
+
+    {
+        int loc = glGetUniformLocation(m_texture_shader, "topleft");
+        // TODO: see others' preference on sub pixel rendering; assumed undesireable
+        glUniform2f(loc, std::floor(x), std::floor(y));
+
+        loc = glGetUniformLocation(m_texture_shader, "size");
+        glUniform2f(loc, w, h);
 
         loc = glGetUniformLocation(m_texture_shader, "colorMult");
         glUniform4f(loc, 1, 1, 1, 1);
