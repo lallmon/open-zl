@@ -20,10 +20,6 @@ namespace {
         worldstate.paused = lua_toboolean(ctx, 1);
         return 0;
     }
-
-    FuncBinding world_funcs[] = {
-        {pauseWorld, "setPaused"}
-    };
 }
 
 System::State System::s_state;
@@ -62,7 +58,10 @@ int System::drawRect(lua_State *ctx)
 
 int System::drawSprite(lua_State *ctx)
 {
-    s_state.window.draw(lua_tostring(ctx, 1), lua_tonumber(ctx, 2), lua_tonumber(ctx, 3));
+    int ct = lua_gettop(ctx);
+    if (ct == 3) {
+        s_state.window.draw(lua_tostring(ctx, 1), lua_tonumber(ctx, 2), lua_tonumber(ctx, 3));
+    }
     return 0;
 }
 
@@ -84,6 +83,19 @@ int System::stopMusic(lua_State *ctx)
     return 0;
 }
 
+int System::loadWorldFile(lua_State *ctx)
+{
+    bool res = WorldLoader::loadWorldFile(lua_tostring(ctx, 1), s_state.world);
+    lua_pushboolean(ctx, res);
+    return 1;
+}
+
+int System::movePlayer(lua_State *ctx)
+{
+    s_state.world.movePlayer(lua_tonumber(ctx, 1), lua_tonumber(ctx, 2));
+    return 0; // TODO: return boolean whether move was successful or not
+}
+
 bool System::initLua()
 {
     m_lua_context = luaL_newstate();
@@ -96,6 +108,12 @@ bool System::initLua()
 //    }
 
     // configure "World" calls
+    FuncBinding world_funcs[] = {
+        {pauseWorld, "setPaused"},
+        {loadWorldFile, "loadWorld"},
+        {movePlayer, "movePlayer"}
+    };
+
     lua_newtable(m_lua_context);
     for(size_t i = 0; i < std::size(world_funcs); ++i) {
         lua_pushstring(m_lua_context, world_funcs[i].name);
@@ -177,6 +195,8 @@ void System::update(float dt)
         lua_pcall(m_lua_context, 1, 0, 0);
     }
 
+    s_state.world.update(dt);
+
     if (glfwWindowShouldClose(s_state.window)) {
         s_state.running = false;
     }
@@ -189,11 +209,13 @@ void System::update(float dt)
 
 void System::renderScreen()
 {
-    s_state.window.renderWindow();
+    // todo: move this to a lua call
+    s_state.world.draw(s_state.window);
 
-    // lua render callbacks; it is up to the client to trigger gameworld draws incase we are in a UI heavy scene
     lua_getglobal(m_lua_context, "draw");
     lua_pcall(m_lua_context, 0, 0, 0);
+
+    s_state.window.renderWindow();
 }
 
 
