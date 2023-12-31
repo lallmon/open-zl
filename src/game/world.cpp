@@ -135,7 +135,8 @@ void World::draw(Window &window) const
         window.draw(tex.data.texture.name, tex.x, tex.y, tex.width, tex.height);
     });
 
-    window.draw("drone", player.x - 16, player.y - 16);
+    window.setPen(1, 1, 1, 1);
+    window.rect(player.x - 6, player.y - 6, 12, 12);
 }
 
 void World::movePlayer(float dx, float dy)

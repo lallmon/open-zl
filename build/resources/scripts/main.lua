@@ -43,55 +43,26 @@
 
 
 -- testing require to load other modules
-local entity = require "/resources/scripts/entities"
+local player = require "resources/scripts/player"
 
 -- global vars
-player = entity.getNew(108, 52, 40, 40)
-ispaused = false
 
 -- callback triggered after the engine initializes
 function init()
-  System.playSFX("test", 3.0)
+  World.loadWorld("map")
 end
 
 -- callback triggered at the physics update rate while the game world is not paused
 function update(dt)
-  if (System.getActionPressed("start")) then
-   System.playSFX("test1")
-   ispaused = true
-   World.setPaused(true)
-   System.stopMusic(0)
-   return
-  end
-
-  local dx = 0
-  local dy = 0
-  if System.getActionHeld("right") then dx = dx + 1 end
-  if System.getActionHeld("left") then dx = dx - 1 end
-  if System.getActionHeld("up") then dy = dy - 1 end
-  if System.getActionHeld("down") then dy = dy + 1 end
-  local speed = 60
-  player.x = player.x + dx * speed * dt
-  player.y = player.y + dy * speed * dt
+  player.move(dt)
 end
 
 -- callback triggered at the physics update rate while the game world is not paused
 function update_paused(dt)
-  if (System.getActionPressed("start")) then
-   System.playSFX("test2")
-   ispaused = false
-   World.setPaused(false)
-   return
-  end
+
 end
 
 -- callback that is (hopefully) triggered at the target framerate
 function draw()
- --TODO:
- --System.drawWorld()
- if (not ispaused) then
-   System.drawSprite("hello", 0, 0)
- end
- System.setPen(1.0, 0.7, 0.7, 1)
- System.drawRect(player.x, player.y, player.width, player.height)
+
 end
