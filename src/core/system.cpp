@@ -212,8 +212,8 @@ void System::renderScreen()
     // todo: move this to a lua call
     s_state.world.draw(s_state.window);
 
-//    lua_getglobal(m_lua_context, "draw");
-//    lua_pcall(m_lua_context, 0, 0, 0);
+    lua_getglobal(m_lua_context, "draw");
+    lua_pcall(m_lua_context, 0, 0, 0);
 
     s_state.window.renderWindow();
 }
