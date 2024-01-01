@@ -25,7 +25,7 @@ class World
 
     bool isValidLoc(float x, float y); // todo: this should take a collision mask argument
 
-    bool canMoveToCell(int dcell_x, int dcell_y, float x, float y) const;
+    bool canMoveToCell(int delta_cell_x, int delta_cell_y, float at_x, float at_y) const;
     void checkPlayerTransitions();
     bool teleportPlayer(float x, float y);
 
