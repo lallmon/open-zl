@@ -90,6 +90,13 @@ int System::loadWorldFile(lua_State *ctx)
     return 1;
 }
 
+int System::loadEventFile(lua_State *ctx)
+{
+    bool res = WorldLoader::loadDialogueNodes(lua_tostring(ctx, 1));
+    lua_pushboolean(ctx, res);
+    return 1;
+}
+
 int System::movePlayer(lua_State *ctx)
 {
     s_state.world.movePlayer(lua_tonumber(ctx, 1), lua_tonumber(ctx, 2));
@@ -111,6 +118,7 @@ bool System::initLua()
     FuncBinding world_funcs[] = {
         {pauseWorld, "setPaused"},
         {loadWorldFile, "loadWorld"},
+        {loadEventFile, "loadEvents"},
         {movePlayer, "movePlayer"}
     };
 

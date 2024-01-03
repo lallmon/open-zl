@@ -41,6 +41,7 @@ class System
 
     // Gameplay Lua callbacks
     static int loadWorldFile(lua_State*);
+    static int loadEventFile(lua_State*);
     static int movePlayer(lua_State*);
 
     // System configuration

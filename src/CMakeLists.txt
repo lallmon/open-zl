@@ -14,6 +14,7 @@ set(SOURCES
     game/worldloader.h game/worldloader.cpp
     game/worldcell.h game/worldcell.cpp
     game/world.h game/world.cpp
+    game/events.h game/events.cpp
     game/playerdata.h game/playerdata.cpp
     )
 
