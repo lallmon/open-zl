@@ -54,7 +54,7 @@ void Game::update(lua_State *ctx, float dt)
         world.update(dt);
         break;
     case World::Transitioning:
-//        world.updateTransition(dt);
+        world.updateTransition(dt);
         break;
     case World::Paused:
         lua_getglobal(ctx, "update_paused");
@@ -62,7 +62,7 @@ void Game::update(lua_State *ctx, float dt)
         lua_pcall(ctx, 1, 0, 0);
         break;
     case World::Dialogue:
-//        world.updateDialogue(dt);
+        world.updateDialogue(dt);
         break;
     }
 }
