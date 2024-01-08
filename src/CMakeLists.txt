@@ -14,6 +14,7 @@ set(SOURCES
     core/fonts/font.h core/fonts/font.cpp
     core/fonts/magofont3.cpp
 
+    game/game.h game/game.cpp
     game/worldloader.h game/worldloader.cpp
     game/worldcell.h game/worldcell.cpp
     game/world.h game/world.cpp

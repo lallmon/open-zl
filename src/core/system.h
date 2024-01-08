@@ -7,7 +7,7 @@
 #include "core/audio.h"
 #include "core/controls.h"
 
-#include "game/worldloader.h"
+#include "game/game.h"
 
 class System
 {
@@ -18,7 +18,7 @@ class System
         Controls controls;
         Window window;
         Audio audio;
-        World world;
+        Game game;
         bool running = false;
     } static s_state;
 
@@ -39,11 +39,6 @@ class System
     static int playSFX(lua_State*);
     static int playMusic(lua_State*);
     static int stopMusic(lua_State*);
-
-    // Gameplay Lua callbacks
-    static int loadWorldFile(lua_State*);
-    static int loadEventFile(lua_State*);
-    static int movePlayer(lua_State*);
 
     // System configuration
     bool initLua();
