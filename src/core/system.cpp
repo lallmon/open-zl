@@ -65,6 +65,22 @@ int System::drawSprite(lua_State *ctx)
     return 0;
 }
 
+int System::print(lua_State *ctx)
+{
+    if (lua_gettop(ctx) < 3) {
+        return 1;
+    }
+    std::string txt = lua_tostring(ctx, 1);
+    int x = lua_tointeger(ctx, 2);
+    int y = lua_tointeger(ctx, 3);
+    float scale = 1.0f;
+    if (lua_gettop(ctx) > 3) {
+        scale = lua_tonumber(ctx, 4);
+    }
+    s_state.window.print(txt, x, y, scale);
+    return 0;
+}
+
 int System::playSFX(lua_State *ctx)
 {
     Audio::playSFX(lua_tostring(ctx, 1));
@@ -137,6 +153,7 @@ bool System::initLua()
         {getActionPressed, "getActionPressed"},
         {setPen, "setPen"},
         {drawRect, "drawRect"},
+        {print, "print"},
         {drawSprite, "drawSprite"},
         {playSFX, "playSFX"},
         {playMusic, "playMusic"},

@@ -11,11 +11,15 @@ set(SOURCES
     core/window.h core/window.cpp
     core/audio.h core/audio.cpp
     core/controls.h core/controls.cpp
+    core/fonts/font.h core/fonts/font.cpp
+    core/fonts/magofont3.cpp
+
     game/worldloader.h game/worldloader.cpp
     game/worldcell.h game/worldcell.cpp
     game/world.h game/world.cpp
     game/events.h game/events.cpp
     game/playerdata.h game/playerdata.cpp
+
     )
 
 if(WIN32)

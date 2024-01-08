@@ -33,6 +33,7 @@ class System
     static int setPen(lua_State*);
     static int drawRect(lua_State*);
     static int drawSprite(lua_State*);
+    static int print(lua_State*);
 
     // Audio Lua callbacks
     static int playSFX(lua_State*);

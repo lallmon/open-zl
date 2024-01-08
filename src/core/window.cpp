@@ -197,6 +197,8 @@ bool Window::initialize()
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     }
 
+    m_active_font = Font::load(MagoFont3);
+
     return true;
 }
 
@@ -323,4 +325,37 @@ void Window::rect(float x, float y, float w, float h)
 
     glBindVertexArray(m_texture_vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Window::print(std::string text, float x, float y, float scale)
+{
+    m_active_font.bind();
+
+    int px = std::floor(x);
+
+    {
+        int loc = glGetUniformLocation(m_texture_shader, "size");
+        glUniform2f(loc, scale * float(m_active_font.getGlyphWidth()), scale * float(m_active_font.getGlyphHeight()));
+
+        loc = glGetUniformLocation(m_texture_shader, "colorMult");
+        glUniform4f(loc, m_pen_set[0], m_pen_set[1], m_pen_set[2], m_pen_set[3]);
+    }
+
+    int uvx_loc = glGetUniformLocation(m_texture_shader, "xverts");
+    int uvy_loc = glGetUniformLocation(m_texture_shader, "yverts");
+
+    float uvs[4];
+    for(const char& ch : text) {
+        m_active_font.getGlyphUVs(ch, uvs);
+        glUniform1fv(uvx_loc, 2, uvs);
+        glUniform1fv(uvy_loc, 2, uvs + 2);
+        drawActive(px, y);
+        px += scale * float(m_active_font.getGlyphWidth(ch) + 1);
+    }
+    uvs[0] = 0;
+    uvs[1] = 1;
+    uvs[2] = 0;
+    uvs[3] = 1;
+    glUniform1fv(uvx_loc, 2, uvs);
+    glUniform1fv(uvy_loc, 2, uvs + 2);
 }
