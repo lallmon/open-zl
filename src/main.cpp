@@ -9,6 +9,7 @@
 #include <chrono>
 
 #include "core/system.h"
+#include "core/resourcelocator.h"
 
 static constexpr int target_fps = 60;
 static constexpr float timestep = 1.0f / float(target_fps);
@@ -27,6 +28,8 @@ float delta_time(const time_pt &t1, const time_pt &t2) {
 int main(int argc, char **argv)
 {
     System system;
+
+    if (argc > 1) ResourceLocator::setRootPath(argv[1]);
 
     if (!system.initialize()) {
         std::cerr << "ERROR: System initialization failed." << std::endl;

@@ -6,7 +6,10 @@
 
 #include "json.hpp"
 
+#include "core/resourcelocator.h"
+
 #include "game/worldcell.h"
+
 
 namespace {
 
@@ -88,7 +91,7 @@ namespace {
 
 bool WorldLoader::loadWorldFile(std::string fname, World &world_data)
 {
-    fname = "resources/levels/" + fname + ".ldtk";
+    fname = ResourceLocator::getPathMap(fname);
 
     world_data = World();
 
@@ -120,8 +123,7 @@ bool WorldLoader::loadWorldFile(std::string fname, World &world_data)
 
 bool WorldLoader::loadDialogueNodes(std::string fname)
 {
-    fname = "resources/dialogue/" + fname + ".twee";
-    std::cout << "starting parse for " << fname << std::endl;
+    fname = ResourceLocator::getPathEvents(fname);
 
     std::ifstream file(fname);
     if (!file.good()) {

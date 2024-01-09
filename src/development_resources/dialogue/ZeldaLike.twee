@@ -1,0 +1,41 @@
+:: StoryTitle
+ZeldaLike
+
+
+:: StoryData
+{
+  "ifid": "E384DB7A-3A21-43ED-A700-AE39EA00F206",
+  "format": "Harlowe",
+  "format-version": "3.3.7",
+  "start": "TomThe Tailor1",
+  "zoom": 1
+}
+
+
+:: FrannyAccusesPlayer {"position":"700,150","size":"100,100"}
+
+
+
+:: FrannyTheDancer1 {"position":"550,100","size":"100,100"}
+>if("PlayerHasSword",[[FrannyAccusesPlayer]])
+Are you witch?
+//skip this line
+Well?!?!
+
+
+:: TomThe Tailor1 {"position":"200,100","size":"100,100"}
+Are you a witch?
+>dialogue_options("Yes",[[TomTheTailer2]], "No", [[TomTheTailer3]])
+
+
+:: TomTheTailer2 {"position":"200,225","size":"100,100"}
+I fucking knew it!
+
+
+:: TomTheTailer3 {"position":"350,225","size":"100,100"}
+Okay.
+>if_player_has("Sword",[[TomTheTailerSword]], [[TomThe Tailor1]])
+
+
+:: TomTheTailerSword {"position":"350,375","size":"100,100"}
+Hey, cool sword by the way.

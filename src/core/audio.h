@@ -46,7 +46,7 @@ protected:
 public:
 
     bool ready() const;
-    void load(const char * resource_path, const char * fname);
+    void load(std::string file);
 };
 
 class AudioController

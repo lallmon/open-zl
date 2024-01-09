@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "core/resourcelocator.h"
+
 System::State System::s_state;
 
 int System::quit(lua_State *ctx)
@@ -82,7 +84,13 @@ int System::stopMusic(lua_State *ctx)
 bool System::initLua()
 {
     m_lua_context = luaL_newstate();
+
     luaL_openlibs(m_lua_context);
+
+    {
+        std::string ppath = "package.path = package.path .. ';" + ResourceLocator::getPackagePath() + "'";
+        luaL_dostring(m_lua_context, ppath.c_str());
+    }
 
     // configure "World" calls
     s_state.game.initialize(m_lua_context);
@@ -103,7 +111,8 @@ bool System::initLua()
     };
     luaL_openlib(m_lua_context, "System", sys_funcs, 0);
 
-    int status = luaL_loadfile(m_lua_context, "resources/scripts/main.lua");
+    std::string mainfile = ResourceLocator::getPathScript("main");
+    int status = luaL_loadfile(m_lua_context, mainfile.c_str());
     if (status) {
         std::cerr << "ERROR: Couldn't load main.lua: " << lua_tostring(m_lua_context, -1);
         return false;

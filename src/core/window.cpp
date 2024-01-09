@@ -3,6 +3,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include "core/resourcelocator.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "stb_image.h"
@@ -42,8 +44,7 @@ bool Window::tryLoadTexture(std::string tex)
     m_textures.push_back(Texture(tex));
     Texture &t = m_textures[m_textures.size()-1];
 
-    // TODO: move this to a resource path locator
-    tex = "resources/textures/" + tex + ".png";
+    tex = ResourceLocator::getPathPNG(tex);
 
     unsigned char * data = stbi_load(tex.c_str(), &t.w, &t.h, 0, 4);
     if (stbi_failure_reason()) {

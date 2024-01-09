@@ -13,6 +13,7 @@ set(SOURCES
     core/controls.h core/controls.cpp
     core/fonts/font.h core/fonts/font.cpp
     core/fonts/magofont3.cpp
+    core/resourcelocator.h core/resourcelocator.cpp
 
     game/game.h game/game.cpp
     game/worldloader.h game/worldloader.cpp
