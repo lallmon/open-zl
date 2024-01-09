@@ -3,6 +3,8 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "core/resourcelocator.h"
+
 float Audio::master_volume = 1.0f;
 float Audio::sfx_volume = 1.0f;
 float Audio::music_volume = 1.0f;
@@ -70,21 +72,14 @@ bool AudioReference::ready() const
     return !failed && file.is_open() && header.sampleCount() > 0 && header.isUncompressed();
 }
 
-void AudioReference::load(const char *resource_path, const char *fname)
+void AudioReference::load(std::string filename)
 {
     if (failed) return;
 
-    if (!strcmp(fname, "")) {
-        failed = true;
-        return;
-    }
-
-    char buffer[140];
-    sprintf(buffer, "%s/%s.wav", resource_path, fname);
-    file.open(buffer, std::ifstream::binary | std::ifstream::in);
+    file.open(filename, std::ifstream::binary | std::ifstream::in);
 
     if (!file.good()) {
-        std::sprintf(buffer, "ERROR: Couldn't open %s", buffer);
+        std::cerr << "ERROR: Couldn't open " << filename.c_str() << std::endl;
         failed = true;
         return;
     }
@@ -210,7 +205,7 @@ AudioReference *Audio::getReference(std::string name)
     static std::unordered_map<std::string, AudioReference> refs;
     if (refs.find(name) == refs.end()) {
         refs[name] = AudioReference();
-        refs.at(name).load("resources/audio", name.c_str());
+        refs.at(name).load(ResourceLocator::getPathWAV(name));
     }
     if (!refs.at(name).ready()) return nullptr;
     return &refs.at(name);

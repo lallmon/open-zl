@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 
+#include "core/fonts/font.h"
+
 class Window
 {
     GLFWwindow * m_handle;
@@ -16,6 +18,8 @@ class Window
 
     unsigned int m_pen_texture;
     float m_pen_set[4] = { 1, 1, 1, 1 };
+
+    Font m_active_font;
 
     struct Texture {
         unsigned int id = 0;
@@ -43,6 +47,7 @@ public:
 
     void setPen(float r, float g, float b, float a);
     void rect(float x, float y, float w, float h);
+    void print(std::string text, float x, float y, float scale = 1.0f);
 
     operator GLFWwindow *() { return m_handle; }
 

@@ -7,7 +7,7 @@
 #include "core/audio.h"
 #include "core/controls.h"
 
-#include "game/worldloader.h"
+#include "game/game.h"
 
 class System
 {
@@ -18,7 +18,7 @@ class System
         Controls controls;
         Window window;
         Audio audio;
-        World world;
+        Game game;
         bool running = false;
     } static s_state;
 
@@ -33,15 +33,12 @@ class System
     static int setPen(lua_State*);
     static int drawRect(lua_State*);
     static int drawSprite(lua_State*);
+    static int print(lua_State*);
 
     // Audio Lua callbacks
     static int playSFX(lua_State*);
     static int playMusic(lua_State*);
     static int stopMusic(lua_State*);
-
-    // Gameplay Lua callbacks
-    static int loadWorldFile(lua_State*);
-    static int movePlayer(lua_State*);
 
     // System configuration
     bool initLua();
@@ -55,6 +52,8 @@ public:
     void renderScreen();
 
     bool running() const;
+
+    static Button getAction(std::string action);
 };
 
 #endif // SYSTEM_H

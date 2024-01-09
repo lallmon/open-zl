@@ -1,0 +1,1 @@
+.\open-zl.exe ../src/development_resources

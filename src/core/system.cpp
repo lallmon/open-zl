@@ -2,25 +2,7 @@
 
 #include <iostream>
 
-namespace {
-    struct FuncBinding {
-        lua_CFunction callback;
-        const char * name;
-    };
-
-//    FuncBinding global_funcs[] = {
-//    };
-//    constexpr size_t global_func_count = std::size(global_funcs);
-
-    struct WorldState {
-        bool paused = false;
-    } worldstate;
-
-    int pauseWorld(lua_State *ctx) {
-        worldstate.paused = lua_toboolean(ctx, 1);
-        return 0;
-    }
-}
+#include "core/resourcelocator.h"
 
 System::State System::s_state;
 
@@ -33,14 +15,14 @@ int System::quit(lua_State *ctx)
 int System::getActionHeld(lua_State *ctx)
 {
     std::string action = lua_tostring(ctx, 1);
-    lua_pushboolean(ctx, s_state.controls.get(action).held());
+    lua_pushboolean(ctx, getAction(action).held());
     return 1;
 }
 
 int System::getActionPressed(lua_State *ctx)
 {
     std::string action = lua_tostring(ctx, 1);
-    lua_pushboolean(ctx, s_state.controls.get(action).pressed());
+    lua_pushboolean(ctx, getAction(action).pressed());
     return 1;
 }
 
@@ -65,6 +47,22 @@ int System::drawSprite(lua_State *ctx)
     return 0;
 }
 
+int System::print(lua_State *ctx)
+{
+    if (lua_gettop(ctx) < 3) {
+        return 1;
+    }
+    std::string txt = lua_tostring(ctx, 1);
+    int x = lua_tointeger(ctx, 2);
+    int y = lua_tointeger(ctx, 3);
+    float scale = 1.0f;
+    if (lua_gettop(ctx) > 3) {
+        scale = lua_tonumber(ctx, 4);
+    }
+    s_state.window.print(txt, x, y, scale);
+    return 0;
+}
+
 int System::playSFX(lua_State *ctx)
 {
     Audio::playSFX(lua_tostring(ctx, 1));
@@ -83,67 +81,38 @@ int System::stopMusic(lua_State *ctx)
     return 0;
 }
 
-int System::loadWorldFile(lua_State *ctx)
-{
-    bool res = WorldLoader::loadWorldFile(lua_tostring(ctx, 1), s_state.world);
-    lua_pushboolean(ctx, res);
-    return 1;
-}
-
-int System::movePlayer(lua_State *ctx)
-{
-    s_state.world.movePlayer(lua_tonumber(ctx, 1), lua_tonumber(ctx, 2));
-    return 0; // TODO: return boolean whether move was successful or not
-}
-
 bool System::initLua()
 {
     m_lua_context = luaL_newstate();
+
     luaL_openlibs(m_lua_context);
 
-    // configure global engine calls
-//    for(size_t i = 0; i < global_func_count; ++i) {
-//        lua_pushcfunction(m_lua_context, global_funcs[i].callback);
-//        lua_setglobal(m_lua_context, global_funcs[i].name);
-//    }
+    {
+        std::string ppath = "package.path = package.path .. ';" + ResourceLocator::getPackagePath() + "'";
+        luaL_dostring(m_lua_context, ppath.c_str());
+    }
 
     // configure "World" calls
-    FuncBinding world_funcs[] = {
-        {pauseWorld, "setPaused"},
-        {loadWorldFile, "loadWorld"},
-        {movePlayer, "movePlayer"}
-    };
-
-    lua_newtable(m_lua_context);
-    for(size_t i = 0; i < std::size(world_funcs); ++i) {
-        lua_pushstring(m_lua_context, world_funcs[i].name);
-        lua_pushcfunction(m_lua_context, world_funcs[i].callback);
-        lua_rawset(m_lua_context, -3);
-    }
-    lua_setglobal(m_lua_context, "World");
+    s_state.game.initialize(m_lua_context);
 
     // configure "System" calls
-    FuncBinding sysfuncs[] = {
-        {quit, "quit"},
-        {getActionHeld, "getActionHeld"},
-        {getActionPressed, "getActionPressed"},
-        {setPen, "setPen"},
-        {drawRect, "drawRect"},
-        {drawSprite, "drawSprite"},
-        {playSFX, "playSFX"},
-        {playMusic, "playMusic"},
-        {stopMusic, "stopMusic"}
+    const struct luaL_Reg sys_funcs [] = {
+        {"quit", quit},
+        {"getActionHeld", getActionHeld},
+        {"getActionPressed", getActionPressed},
+        {"setPen", setPen},
+        {"drawRect", drawRect},
+        {"print", print},
+        {"drawSprite", drawSprite},
+        {"playSFX", playSFX},
+        {"playMusic", playMusic},
+        {"stopMusic", stopMusic},
+        {NULL, NULL}
     };
+    luaL_openlib(m_lua_context, "System", sys_funcs, 0);
 
-    lua_newtable(m_lua_context);
-    for(size_t i = 0; i < std::size(sysfuncs); ++i) {
-        lua_pushstring(m_lua_context, sysfuncs[i].name);
-        lua_pushcfunction(m_lua_context, sysfuncs[i].callback);
-        lua_rawset(m_lua_context, -3);
-    }
-    lua_setglobal(m_lua_context, "System");
-
-    int status = luaL_loadfile(m_lua_context, "resources/scripts/main.lua");
+    std::string mainfile = ResourceLocator::getPathScript("main");
+    int status = luaL_loadfile(m_lua_context, mainfile.c_str());
     if (status) {
         std::cerr << "ERROR: Couldn't load main.lua: " << lua_tostring(m_lua_context, -1);
         return false;
@@ -185,17 +154,7 @@ void System::update(float dt)
     glfwPollEvents();
     s_state.controls.update(s_state.window);
 
-    if (worldstate.paused) {
-        lua_getglobal(m_lua_context, "update_paused");
-        lua_pushnumber(m_lua_context, double(dt));
-        lua_pcall(m_lua_context, 1, 0, 0);
-    } else {
-        lua_getglobal(m_lua_context, "update");
-        lua_pushnumber(m_lua_context, double(dt));
-        lua_pcall(m_lua_context, 1, 0, 0);
-    }
-
-    s_state.world.update(dt);
+    s_state.game.update(m_lua_context, dt);
 
     if (glfwWindowShouldClose(s_state.window)) {
         s_state.running = false;
@@ -209,12 +168,7 @@ void System::update(float dt)
 
 void System::renderScreen()
 {
-    // todo: move this to a lua call
-    s_state.world.draw(s_state.window);
-
-    lua_getglobal(m_lua_context, "draw");
-    lua_pcall(m_lua_context, 0, 0, 0);
-
+    s_state.game.draw(m_lua_context, s_state.window);
     s_state.window.renderWindow();
 }
 
@@ -222,4 +176,9 @@ void System::renderScreen()
 bool System::running() const
 {
     return s_state.running;
+}
+
+Button System::getAction(std::string action)
+{
+    return s_state.controls.get(action);
 }

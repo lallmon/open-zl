@@ -6,7 +6,10 @@
 
 #include "json.hpp"
 
+#include "core/resourcelocator.h"
+
 #include "game/worldcell.h"
+
 
 namespace {
 
@@ -74,17 +77,28 @@ namespace {
 
         return true;
     }
+
+
+    void registerNode(std::string id, EventNode node) {
+        if (!node.empty() && id.size() > 0) {
+            if (id != "StoryTitle" && id != "StoryData") {
+//                std::cout << "INFO: registering " << id << " with event count " << node.events.size() << std::endl;
+                Event::registerNode(id, node);
+            }
+        }
+    }
 }
 
 bool WorldLoader::loadWorldFile(std::string fname, World &world_data)
 {
-    fname = "resources/levels/" + fname + ".ldtk";
+    fname = ResourceLocator::getPathMap(fname);
 
     world_data = World();
 
     std::ifstream file(fname);
     if (!file.good()) {
         std::cerr << "ERROR: World file at " << fname.c_str() << " does not exist" << std::endl;
+        std::cerr << "       " << strerror(errno) << std::endl;
         return false;
     }
 
@@ -104,5 +118,37 @@ bool WorldLoader::loadWorldFile(std::string fname, World &world_data)
 
     world_data.reset();
 
+    return true;
+}
+
+bool WorldLoader::loadDialogueNodes(std::string fname)
+{
+    fname = ResourceLocator::getPathEvents(fname);
+
+    std::ifstream file(fname);
+    if (!file.good()) {
+        std::cerr << "ERROR: Could not load " << fname.c_str() << std::endl;
+        std::cerr << "       " << strerror(errno) << std::endl;
+        return false;
+    }
+    EventNode node;
+    std::string id;
+    std::string line;
+    while(getline(file, line)) {
+        if (line.find(":: ") == 0) {
+            registerNode(id, node);
+            id = line.substr(3, line.length() - 3);
+            size_t del = id.find(" {");
+            if (del != std::string::npos) {
+                id = id.substr(0, del);
+            }
+            node = EventNode();
+        } else if (line.length() > 0 && line.find("//") > 0) {
+            Event e(Event::Dialogue);
+            e.text = line;
+            node.events.push_back(e);
+        }
+    }
+    registerNode(id, node);
     return true;
 }
