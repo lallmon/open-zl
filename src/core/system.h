@@ -52,6 +52,8 @@ public:
     void renderScreen();
 
     bool running() const;
+
+    static Button getAction(std::string action);
 };
 
 #endif // SYSTEM_H

@@ -32,14 +32,35 @@ int Game::movePlayer(lua_State *ctx)
     return 0; // TODO: return boolean whether move was successful or not
 }
 
+int Game::startDialogue(lua_State *ctx)
+{
+    // TODO: Optionally allow calling this function with a string identifying a Dialogue node parsed from a TWEE file
+
+    std::vector<std::string> lines;
+    /* 1st argument must be a table (t) */
+    luaL_checktype(ctx, 1, LUA_TTABLE);
+
+    lua_pushnil(ctx);  /* first key */
+    while (lua_next(ctx, 1) != 0) {
+        if (lua_type(ctx, -1) == LUA_TSTRING) {
+            const char * line = lua_tostring(ctx, -1);
+            lines.push_back(line);
+        }
+        lua_pop(ctx, 1);
+    }
+    world.setDialogue(DialogueViewer::getNodes(lines));
+    return 0;
+}
+
 void Game::initialize(lua_State *ctx)
 {
     const struct luaL_Reg world_funcs [] = {
-        {"setPaused", pauseWorld},
-        {"loadWorld", loadWorldFile},
-        {"loadEvents", loadEventFile},
-        {"movePlayer", movePlayer},
-         {NULL, NULL}  /* sentinel */
+    {"setPaused", pauseWorld},
+    {"loadWorld", loadWorldFile},
+    {"loadEvents", loadEventFile},
+    {"movePlayer", movePlayer},
+    {"startDialogue", startDialogue},
+    {NULL, NULL}  /* sentinel */
        };
     luaL_openlib(ctx, "World", world_funcs, 0);
 }

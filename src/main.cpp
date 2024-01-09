@@ -12,7 +12,7 @@
 
 static constexpr int target_fps = 60;
 static constexpr float timestep = 1.0f / float(target_fps);
-static constexpr float physics_timestep = timestep * 0.73f; // just pick something lower that's not resonant
+static constexpr float physics_timestep = timestep * 0.43f; // just pick something lower that's not resonant
 
 typedef std::chrono::steady_clock::time_point time_pt;
 

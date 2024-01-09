@@ -7,6 +7,7 @@
 
 #include "game/worldcell.h"
 #include "game/playerdata.h"
+#include "game/dialogueviewer.h"
 
 class WorldLoader;
 class Game;
@@ -25,6 +26,7 @@ class World
 
     PlayerData player;
     WorldState state;
+    DialogueSequence active_dialogue;
 
     struct TransitionData {
         float timer = 0.0f;
@@ -46,6 +48,8 @@ class World
 
     friend WorldLoader;
     friend Game;
+
+    void setDialogue(DialogueSequence seq);
 public:
     void reset();
     void update(float dt);
@@ -54,6 +58,7 @@ public:
     void draw(Window &window) const;
 
     void movePlayer(float dx, float dy);
+
 };
 
 #endif // WORLD_H

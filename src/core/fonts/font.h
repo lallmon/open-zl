@@ -2,6 +2,7 @@
 #define FONT_H
 
 #include <cstdint>
+#include <string>
 
 enum FontName {
     MagoFont3,
@@ -29,6 +30,7 @@ public:
     int getGlyphHeight() const;
 
     static const Font load(FontName font);
+    static float getLineWidth(FontName font, std::string line, float scale = 1.0f);
 
 };
 

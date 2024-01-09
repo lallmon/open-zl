@@ -1,10 +1,13 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <vector>
+
 #include "lua.hpp"
 
 #include "core/window.h"
 #include "game/world.h"
+#include "game/dialogueviewer.h"
 
 class Game
 {
@@ -15,6 +18,7 @@ class Game
     static int loadWorldFile(lua_State*);
     static int loadEventFile(lua_State*);
     static int movePlayer(lua_State*);
+    static int startDialogue(lua_State*);
 public:
     void initialize(lua_State*);
 

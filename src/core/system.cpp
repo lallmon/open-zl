@@ -13,14 +13,14 @@ int System::quit(lua_State *ctx)
 int System::getActionHeld(lua_State *ctx)
 {
     std::string action = lua_tostring(ctx, 1);
-    lua_pushboolean(ctx, s_state.controls.get(action).held());
+    lua_pushboolean(ctx, getAction(action).held());
     return 1;
 }
 
 int System::getActionPressed(lua_State *ctx)
 {
     std::string action = lua_tostring(ctx, 1);
-    lua_pushboolean(ctx, s_state.controls.get(action).pressed());
+    lua_pushboolean(ctx, getAction(action).pressed());
     return 1;
 }
 
@@ -167,4 +167,9 @@ void System::renderScreen()
 bool System::running() const
 {
     return s_state.running;
+}
+
+Button System::getAction(std::string action)
+{
+    return s_state.controls.get(action);
 }

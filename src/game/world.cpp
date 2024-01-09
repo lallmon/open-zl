@@ -1,5 +1,7 @@
 #include "world.h"
 
+#include "core/system.h"
+
 bool World::startTransition(int cx, int cy, float px, float py, bool teleport)
 {
     if (!isValidLoc(cx, cy, px, py)) {
@@ -113,6 +115,14 @@ void World::drawCell(const WorldCell &cell, Window &window, float offset_x, floa
     window.setClip(0, 0, 1, 1);
 }
 
+void World::setDialogue(DialogueSequence seq)
+{
+    if (seq.size() > 0) {
+        active_dialogue = seq;
+        state = Dialogue;
+    }
+}
+
 void World::reset()
 {
     player.world_cell_x = m_player_start_x;
@@ -150,7 +160,14 @@ void World::updateTransition(float dt)
 
 void World::updateDialogue(float dt)
 {
-
+    Button confirm = System::getAction("confirm");
+    active_dialogue.front().update(dt * (confirm.held() ? 2.0f : 1.0f));
+    if (active_dialogue.front().ready(0.6f) && confirm.pressed()) {
+        active_dialogue.pop();
+        if (active_dialogue.size() == 0) {
+            state = Roaming;
+        }
+    }
 }
 
 void World::draw(Window &window) const
@@ -211,6 +228,10 @@ void World::draw(Window &window) const
         window.setPen(0, 0, 0, f);
         window.rect(0, 0, 256, 144);
         window.setPen(1, 1, 1, 1);
+    }
+
+    if (state == Dialogue) {
+        active_dialogue.front().draw(window, 0.6f);
     }
 }
 

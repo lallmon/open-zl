@@ -20,6 +20,7 @@ set(SOURCES
     game/world.h game/world.cpp
     game/events.h game/events.cpp
     game/playerdata.h game/playerdata.cpp
+    game/dialogueviewer.h game/dialogueviewer.cpp
 
     )
 

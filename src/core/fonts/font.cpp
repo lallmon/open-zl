@@ -109,3 +109,13 @@ const Font Font::load(FontName font)
 
     return f;
 }
+
+float Font::getLineWidth(FontName font, std::string line, float scale)
+{
+    Font f = load(font);
+    float len = -scale; //offset the first space
+    for(const char &ch : line) {
+        len += float(f.getGlyphWidth(ch) + 1) * scale;
+    }
+    return len;
+}
